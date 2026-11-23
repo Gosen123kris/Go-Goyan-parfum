@@ -1,1 +1,52 @@
-
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Go Goyan Parfum</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Roboto,sans-serif;background:#0b0b0d;color:#f4efe6}
+header{position:sticky;top:0;z-index:10;display:flex;gap:10px;justify-content:space-between;align-items:center;padding:14px 5%;background:rgba(11,11,13,.92);backdrop-filter:blur(10px);border-bottom:1px solid #2a2418}
+.logo{font-size:20px;letter-spacing:3px;color:#d4af37;font-weight:700}
+.cartbtn{background:none;border:1px solid #d4af37;color:#d4af37;padding:8px 14px;border-radius:30px;cursor:pointer;font-size:14px}
+.hero{text-align:center;padding:80px 5% 60px;background:radial-gradient(circle at 50% 0,#2a2210 0,#0b0b0d 70%)}
+.hero h1{font-size:clamp(32px,7vw,60px);letter-spacing:6px;color:#d4af37;font-weight:300}
+.hero p{margin:16px auto 28px;max-width:520px;color:#bdb5a3;line-height:1.6}
+.btn{background:#d4af37;color:#0b0b0d;border:none;padding:13px 30px;border-radius:30px;font-weight:700;cursor:pointer;font-size:15px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;padding:26px 5% 0}
+.tools input,.tools select{flex:1;min-width:140px}
+select,input{width:100%;padding:10px;margin:5px 0;background:#1b1b1f;border:1px solid #333;color:#f4efe6;border-radius:8px;font-size:14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 5% 0}
+.chip{white-space:nowrap;background:none;border:1px solid #3a3322;color:#bdb5a3;padding:7px 16px;border-radius:20px;cursor:pointer}
+.chip.on{background:#d4af37;color:#0b0b0d;border-color:#d4af37}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;padding:24px 5%}
+.card{background:#141417;border:1px solid #23201a;border-radius:16px;overflow:hidden;transition:.3s}
+.card:hover{transform:translateY(-5px);border-color:#d4af37}
+.bottle{position:relative;height:150px;display:flex;align-items:center;justify-content:center;font-size:60px;background:linear-gradient(160deg,#1d1a12,#0f0f12);cursor:pointer}
+.heart{position:absolute;top:8px;right:10px;font-size:22px;background:none;border:none;color:#d4af37;cursor:pointer}
+.info{padding:14px}
+.info h3{font-size:15px;margin-bottom:3px}
+.info small{color:#8d8574}
+.star{color:#d4af37;font-size:13px;margin-top:4px}
+.price{margin:8px 0;color:#d4af37;font-weight:700}
+.add{width:100%;background:none;border:1px solid #d4af37;color:#d4af37;padding:9px;border-radius:10px;cursor:pointer}
+.add:hover{background:#d4af37;color:#0b0b0d}
+h2.t{text-align:center;padding-top:44px;font-weight:300;letter-spacing:4px;color:#d4af37}
+#panel{position:fixed;top:0;right:-440px;width:min(400px,100%);height:100%;background:#111114;border-left:1px solid #d4af37;z-index:30;padding:20px;transition:.35s;overflow:auto}
+#panel.open{right:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:11px 0;border-bottom:1px solid #23201a;font-size:13px}
+.row button{background:none;border:1px solid #444;color:#f4efe6;width:26px;height:26px;border-radius:50%;cursor:pointer}
+.ln{display:flex;justify-content:space-between;margin:6px 0;font-size:14px}
+.total{display:flex;justify-content:space-between;margin:14px 0;font-size:18px;color:#d4af37;font-weight:700}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.open{display:flex}
+.mbox{background:#141417;border:1px solid #d4af37;border-radius:18px;max-width:380px;width:100%;padding:22px;text-align:center}
+.mbox .big{font-size:80px}
+.mbox p{color:#bdb5a3;line-height:1.5;margin:10px 0}
+.rev{text-align:left;font-size:13px;color:#8d8574;margin:10px 0}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#d4af37;color:#0b0b0d;padding:10px 20px;border-radius:30px;font-weight:700;z-index:50;opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1}
+.wa{position:fixed;bottom:18px;right:18px;z-index:25;background:#25d366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none}
+footer{text-align:center;padding:40px;color:#6f6858;font-size:13px}
+</style></head><body>
+<header><div class="logo">GO GOYAN</div><button class="cartbtn" onclick="togglePanel()">Keranjang (<span id="count">0</span>)</button></header>
+<section class="hero"><h1>GO GOYAN PARFUM</h1><p>Aroma yang bercerita. Koleksi parfum eksklusif, dikirim ke seluruh Indonesia dan dunia.</p><button class="btn" onclick="document.getElementById('produk').scrollIntoView({behavior:'smooth'})">Belanja Sekarang</button></section>
+<h2 class="t" id="produk">KOLEKSI KAMI</h2>
+<div class="tools"><input id="q" placeholder="Cari parfum..." oninput="Q=this.value;renderGrid()"><select id="urut" onchange="renderGrid()"><option value="">Urutkan</option><option value="asc">Harga termurah</option><option value="desc">Harga termahal</option><option value="rate">Rating tertinggi</op

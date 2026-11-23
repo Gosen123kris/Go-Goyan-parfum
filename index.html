@@ -3,9 +3,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Roboto,sans-serif;background:#0b0b0d;color:#f4efe6}
-header{position:sticky;top:0;z-index:10;display:flex;gap:10px;justify-content:space-between;align-items:center;padding:14px 5%;background:rgba(11,11,13,.92);backdrop-filter:blur(10px);border-bottom:1px solid #2a2418}
+header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:14px 5%;background:rgba(11,11,13,.92);backdrop-filter:blur(10px);border-bottom:1px solid #2a2418}
 .logo{font-size:20px;letter-spacing:3px;color:#d4af37;font-weight:700}
-.cartbtn{background:none;border:1px solid #d4af37;color:#d4af37;padding:8px 14px;border-radius:30px;cursor:pointer;font-size:14px}
+.cartbtn,.add{background:none;border:1px solid #d4af37;color:#d4af37;cursor:pointer}
+.cartbtn{padding:8px 14px;border-radius:30px}
+.add{width:100%;padding:9px;border-radius:10px}
+.add:hover{background:#d4af37;color:#0b0b0d}
 .hero{text-align:center;padding:80px 5% 60px;background:radial-gradient(circle at 50% 0,#2a2210 0,#0b0b0d 70%)}
 .hero h1{font-size:clamp(32px,7vw,60px);letter-spacing:6px;color:#d4af37;font-weight:300}
 .hero p{margin:16px auto 28px;max-width:520px;color:#bdb5a3;line-height:1.6}
@@ -26,8 +29,6 @@ select,input{width:100%;padding:10px;margin:5px 0;background:#1b1b1f;border:1px 
 .info small{color:#8d8574}
 .star{color:#d4af37;font-size:13px;margin-top:4px}
 .price{margin:8px 0;color:#d4af37;font-weight:700}
-.add{width:100%;background:none;border:1px solid #d4af37;color:#d4af37;padding:9px;border-radius:10px;cursor:pointer}
-.add:hover{background:#d4af37;color:#0b0b0d}
 h2.t{text-align:center;padding-top:44px;font-weight:300;letter-spacing:4px;color:#d4af37}
 #panel{position:fixed;top:0;right:-440px;width:min(400px,100%);height:100%;background:#111114;border-left:1px solid #d4af37;z-index:30;padding:20px;transition:.35s;overflow:auto}
 #panel.open{right:0}
@@ -38,15 +39,93 @@ h2.t{text-align:center;padding-top:44px;font-weight:300;letter-spacing:4px;color
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
 #modal.open{display:flex}
 .mbox{background:#141417;border:1px solid #d4af37;border-radius:18px;max-width:380px;width:100%;padding:22px;text-align:center}
-.mbox .big{font-size:80px}
 .mbox p{color:#bdb5a3;line-height:1.5;margin:10px 0}
-.rev{text-align:left;font-size:13px;color:#8d8574;margin:10px 0}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#d4af37;color:#0b0b0d;padding:10px 20px;border-radius:30px;font-weight:700;z-index:50;opacity:0;transition:.3s;pointer-events:none}
 #toast.show{opacity:1}
-.wa{position:fixed;bottom:18px;right:18px;z-index:25;background:#25d366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none}
+.wa{position:fixed;bottom:18px;right:18px;z-index:25;background:#25d366;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none}
 footer{text-align:center;padding:40px;color:#6f6858;font-size:13px}
 </style></head><body>
 <header><div class="logo">GO GOYAN</div><button class="cartbtn" onclick="togglePanel()">Keranjang (<span id="count">0</span>)</button></header>
 <section class="hero"><h1>GO GOYAN PARFUM</h1><p>Aroma yang bercerita. Koleksi parfum eksklusif, dikirim ke seluruh Indonesia dan dunia.</p><button class="btn" onclick="document.getElementById('produk').scrollIntoView({behavior:'smooth'})">Belanja Sekarang</button></section>
 <h2 class="t" id="produk">KOLEKSI KAMI</h2>
-<div class="tools"><input id="q" placeholder="Cari parfum..." oninput="Q=this.value;renderGrid()"><select id="urut" onchange="renderGrid()"><option value="">Urutkan</option><option value="asc">Harga termurah</option><option value="desc">Harga termahal</option><option value="rate">Rating tertinggi</op
+<div class="tools"><input id="q" placeholder="Cari parfum..." oninput="Q=this.value;renderGrid()"><select id="urut" onchange="renderGrid()"><option value="">Urutkan</option><option value="asc">Harga termurah</option><option value="desc">Harga termahal</option><option value="rate">Rating tertinggi</option></select></div>
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<div id="modal" onclick="if(event.target===this)closeModal()"><div class="mbox" id="mbox"></div></div>
+<div id="panel">
+<h3 style="color:#d4af37;margin-bottom:10px">Keranjang Belanja</h3>
+<div id="items"></div>
+<input id="kode" placeholder="Kode promo (coba: GOYAN10)"><button class="add" onclick="applyPromo()">Pakai Kode</button>
+<div style="margin-top:14px"><div class="ln"><span>Subtotal</span><span id="sub">Rp0</span></div><div class="ln"><span>Diskon</span><span id="disc">Rp0</span></div><div class="ln"><span>Ongkir</span><span id="ship">Rp0</span></div></div>
+<div class="total"><span>Total</span><span id="total">Rp0</span></div>
+<select id="cur" onchange="renderAll()"><option value="IDR">Rupiah (IDR)</option><option value="USD">Dollar (USD)</option></select>
+<select id="zona" onchange="renderCart()"><option value="ID">Kirim dalam Indonesia</option><option value="WORLD">Kirim luar negeri</option></select>
+<select id="bayar"></select>
+<input id="nama" placeholder="Nama lengkap">
+<input id="alamat" placeholder="Alamat dan negara pengiriman">
+<button class="btn" style="width:100%;margin-top:10px" onclick="checkout()">Check Out via WhatsApp</button>
+<button class="add" style="margin-top:10px" onclick="togglePanel()">Tutup</button>
+</div>
+<a class="wa" id="wa" target="_blank">💬</a>
+<div id="toast"></div>
+<footer>2026 Go Goyan Parfum. Semua hak dilindungi.</footer>
+<script>
+const RATE=16000,NOMOR_WA="6281234567890";
+const PAY={"Transfer BCA":"BCA 1234567890 a.n. Go Goyan","DANA":"0812-3456-7890","GoPay":"0812-3456-7890"};
+const PROMO={GOYAN10:10,HEMAT5:5},SIZES={30:0.7,50:1,100:1.7};
+const names=[["Noir Elegance","Woody"],["Golden Hour","Amber"],["Velvet Rose","Floral"],["Midnight Oud","Oud"],["Citrus Bloom","Segar"],["Vanilla Dream","Manis"],["Ocean Mist","Aquatic"],["Royal Musk","Musk"],["Sandal Soul","Woody"],["Jasmine Night","Floral"],["Black Amber","Amber"],["Silk Petal","Floral"],["Cedar Wind","Woody"],["Sweet Honey","Manis"],["Pure Lavender","Segar"],["Spice Route","Spicy"],["Moon Orchid","Floral"],["Desert Gold","Oud"],["Fresh Dawn","Aquatic"],["Imperial Leather","Leather"]];
+const icons=["🧴","🌹","🌙","✨","🍋","🌸"];
+const products=names.map((n,i)=>({id:i,name:n[0],type:n[1],price:150000+(i%5)*25000,icon:icons[i%6],rate:(4+((i*7)%10)/10).toFixed(1),desc:"Aroma "+n[1].toLowerCase()+" yang elegan dan tahan lama."}));
+let cart={},wish=[],promo="",F="Semua",Q="";
+try{cart=JSON.parse(localStorage.getItem("gg_cart")||"{}");wish=JSON.parse(localStorage.getItem("gg_wish")||"[]")}catch(e){}
+function save(){try{localStorage.setItem("gg_cart",JSON.stringify(cart));localStorage.setItem("gg_wish",JSON.stringify(wish))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function money(v){return $('cur').value==='USD'?'$'+(v/RATE).toFixed(2):'Rp'+Math.round(v).toLocaleString('id-ID')}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1600)}
+function stars(r){return '★'.repeat(Math.round(r))+' '+r}
+function renderChips(){const ts=['Semua','Favorit',...new Set(products.map(p=>p.type))];$('chips').innerHTML=ts.map(t=>`<button class="chip ${t===F?'on':''}" onclick="F='${t}';renderChips();renderGrid()">${t}</button>`).join('')}
+function renderGrid(){
+ let l=products.filter(p=>(F==='Semua'||(F==='Favorit'?wish.includes(p.id):p.type===F))&&p.name.toLowerCase().includes(Q.toLowerCase()));
+ const u=$('urut').value;
+ if(u==='asc')l.sort((a,b)=>a.price-b.price);if(u==='desc')l.sort((a,b)=>b.price-a.price);if(u==='rate')l.sort((a,b)=>b.rate-a.rate);
+ $('grid').innerHTML=l.map(p=>`<div class="card"><div class="bottle" onclick="openModal(${p.id})">${p.icon}<button class="heart" onclick="event.stopPropagation();fav(${p.id})">${wish.includes(p.id)?'♥':'♡'}</button></div><div class="info"><h3>${p.name}</h3><small>${p.type} - 50 ml</small><div class="star">${stars(p.rate)}</div><div class="price">${money(p.price)}</div><button class="add" onclick="add(${p.id},50)">Tambah ke Keranjang</button></div></div>`).join('')||'<p style="color:#8d8574;grid-column:1/-1;text-align:center">Parfum tidak ditemukan.</p>';
+}
+function fav(id){const i=wish.indexOf(id);i<0?wish.push(id):wish.splice(i,1);save();renderGrid()}
+function openModal(id){
+ const p=products[id];
+ $('mbox').innerHTML=`<div style="font-size:80px">${p.icon}</div><h3 style="color:#d4af37">${p.name}</h3><small style="color:#8d8574">${p.type}</small><div class="star">${stars(p.rate)}</div><p>${p.desc}</p><select id="ms" onchange="$('mp').textContent=money(${p.price}*SIZES[this.value])"><option value="30">30 ml</option><option value="50" selected>50 ml</option><option value="100">100 ml</option></select><div class="price" id="mp">${money(p.price)}</div><button class="btn" style="width:100%" onclick="add(${p.id},$('ms').value);closeModal()">Tambah ke Keranjang</button><button class="add" style="margin-top:8px" onclick="closeModal()">Tutup</button>`;
+ $('modal').classList.add('open');
+}
+function closeModal(){$('modal').classList.remove('open')}
+function add(id,size){const k=id+'|'+size;cart[k]=(cart[k]||0)+1;save();renderCart();toast('Ditambahkan ke keranjang')}
+function chg(k,d){cart[k]+=d;if(cart[k]<=0)delete cart[k];save();renderCart()}
+function applyPromo(){const c=$('kode').value.trim().toUpperCase();if(PROMO[c]){promo=c;toast('Promo '+c+' aktif')}else{promo='';toast('Kode tidak valid')}renderCart()}
+function calc(){
+ let s=0;Object.keys(cart).forEach(k=>{const[i,z]=k.split('|');s+=products[i].price*SIZES[z]*cart[k]});
+ const d=promo?s*PROMO[promo]/100:0;
+ const sh=s===0?0:(s>=500000?0:($('zona').value==='ID'?20000:150000));
+ return{s,d,sh,t:s-d+sh};
+}
+function renderCart(){
+ let c=0;
+ $('items').innerHTML=Object.keys(cart).map(k=>{const[i,z]=k.split('|'),p=products[i],q=cart[k];c+=q;return `<div class="row"><span>${p.name}<br><small style="color:#8d8574">${z} ml</small></span><span><button onclick="chg('${k}',-1)">-</button> ${q} <button onclick="chg('${k}',1)">+</button></span><span>${money(p.price*SIZES[z]*q)}</span></div>`}).join('')||'<p style="color:#8d8574;margin-bottom:10px">Keranjang masih kosong.</p>';
+ const r=calc();
+ $('sub').textContent=money(r.s);$('disc').textContent='-'+money(r.d);$('ship').textContent=r.sh?money(r.sh):'Gratis';$('total').textContent=money(r.t);$('count').textContent=c;
+}
+function renderAll(){renderGrid();renderCart()}
+function togglePanel(){$('panel').classList.toggle('open')}
+function checkout(){
+ const ids=Object.keys(cart);
+ if(!ids.length){alert('Keranjang masih kosong');return}
+ const nama=$('nama').value.trim(),alamat=$('alamat').value.trim();
+ if(!nama||!alamat){alert('Isi nama dan alamat dulu');return}
+ const by=$('bayar').value,r=calc();
+ let m='Pesanan Go Goyan Parfum\nNama: '+nama+'\nAlamat: '+alamat+'\n\n';
+ ids.forEach(k=>{const[i,z]=k.split('|');m+='- '+products[i].name+' '+z+'ml x'+cart[k]+'\n'});
+ m+='\nSubtotal: '+money(r.s)+'\nDiskon: '+money(r.d)+'\nOngkir: '+money(r.sh)+'\nTotal: '+money(r.t)+'\nPembayaran: '+by+' ('+PAY[by]+')';
+ window.open('https://wa.me/'+NOMOR_WA+'?text='+encodeURIComponent(m),'_blank');
+}
+$('bayar').innerHTML=Object.keys(PAY).map(k=>`<option>${k}</option>`).join('');
+$('wa').href='https://wa.me/'+NOMOR_WA;
+renderChips();renderAll();
+</script></body></html>
